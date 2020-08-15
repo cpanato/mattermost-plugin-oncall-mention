@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -41,7 +40,6 @@ func (p *Plugin) OnActivate() error {
 type Oncall struct {
 	Primary   string
 	Secondary string
-	CacheTime time.Time
 }
 
 func (p *Plugin) getFreshOncallPeeps() Oncall {
@@ -50,7 +48,6 @@ func (p *Plugin) getFreshOncallPeeps() Oncall {
 	oncallPeeps := Oncall{
 		Primary:   primary,
 		Secondary: secondary,
-		CacheTime: time.Now(),
 	}
 
 	if primary == "" {
@@ -58,7 +55,7 @@ func (p *Plugin) getFreshOncallPeeps() Oncall {
 		oncallPeeps.Secondary = ""
 	}
 
-	p.storeOncallPersons(oncallPeeps)
+	_ = p.storeOncallPersons(oncallPeeps)
 
 	return oncallPeeps
 }
@@ -68,9 +65,9 @@ func (p *Plugin) storeOncallPersons(oncallPersons Oncall) error {
 	if err != nil {
 		return err
 	}
-	err = p.API.KVSet("OnCallMention", []byte(b))
-	if err != nil {
-		return fmt.Errorf("Encountered error saving oncallPersons mapping")
+	appErr := p.API.KVSetWithExpiry("OnCallMention", b, 3600)
+	if appErr != nil {
+		return fmt.Errorf("encountered error saving oncallPersons mapping")
 	}
 	return nil
 }
@@ -88,23 +85,23 @@ func (p *Plugin) getCacheOncallPersons() Oncall {
 
 func (p *Plugin) IsValid(configuration *configuration) error {
 	if configuration.OpsGenieAPIKey == "" {
-		return fmt.Errorf("Must have an OpsGenie API Key Set")
+		return fmt.Errorf("must have an OpsGenie API Key Set")
 	}
 
 	if configuration.PrimaryScheduleName == "" {
-		return fmt.Errorf("Must have an PrimaryScheduleName Set")
+		return fmt.Errorf("must have an PrimaryScheduleName Set")
 	}
 
 	if configuration.SecondaryScheduleName == "" {
-		return fmt.Errorf("Must have an SecondaryScheduleName Set")
+		return fmt.Errorf("must have an SecondaryScheduleName Set")
 	}
 
 	if configuration.ManagerEscalation == "" {
-		return fmt.Errorf("Must have an ManagerEscalation Set")
+		return fmt.Errorf("must have an ManagerEscalation Set")
 	}
 
 	if configuration.MentionKey == "" {
-		return fmt.Errorf("Must have an MentionKey Set")
+		return fmt.Errorf("must have an MentionKey Set")
 	}
 
 	return nil
@@ -121,12 +118,7 @@ func (p *Plugin) MessageWillBePosted(context *plugin.Context, post *model.Post) 
 			oncallPeeps := Oncall{}
 			oncallPeeps = p.getCacheOncallPersons()
 			if oncallPeeps == (Oncall{}) {
-				oncallPeeps = p.getFreshOncallPeeps()
-			}
-			oneHourCache := oncallPeeps.CacheTime.Add(1 * time.Hour)
-			testCacheTime := time.Now().Sub(oneHourCache)
-			if testCacheTime >= 0 {
-				p.API.LogDebug("Cache Expired, calling opsgenie to get fresh data")
+				p.API.LogDebug("Cache Expired or key is empty, calling opsgenie to get fresh data")
 				oncallPeeps = p.getFreshOncallPeeps()
 			}
 			toReplace := fmt.Sprintf("[@%s]( \\* @%s @%s \\* )", p.configuration.MentionKey, oncallPeeps.Primary, oncallPeeps.Secondary)

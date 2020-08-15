@@ -11,7 +11,6 @@ import (
 )
 
 func (p *Plugin) whoIsOnCall(userNameType string) (string, string) {
-
 	primary, err := p.getOncall(p.configuration.PrimaryScheduleName, userNameType)
 	if err != nil {
 		p.API.LogError("not able to get who is the primary contact")
