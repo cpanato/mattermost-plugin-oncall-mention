@@ -12,9 +12,9 @@ var manifest *model.Manifest
 
 const manifestStr = `
 {
-  "id": "com.mattermost.plugin-starter-template",
-  "name": "Plugin Starter Template",
-  "description": "This plugin serves as a starting point for writing a Mattermost plugin.",
+  "id": "com.cpanato.oncall-mention",
+  "name": "Mattermost Cloud OnCall mention",
+  "description": "This plugin creates a alias to make easier to ping who is oncall.",
   "version": "0.1.0",
   "min_server_version": "5.12.0",
   "server": {
@@ -25,13 +25,51 @@ const manifestStr = `
     },
     "executable": ""
   },
-  "webapp": {
-    "bundle_path": "webapp/dist/main.js"
-  },
   "settings_schema": {
     "header": "",
-    "footer": "",
-    "settings": []
+    "footer": "Made with ❤️",
+    "settings": [
+      {
+        "key": "OpsGenieAPIKey",
+        "display_name": "OpsGenie API Key",
+        "type": "text",
+        "help_text": "Set the OpsGenie API Key to get one see https://docs.opsgenie.com/docs/api-key-management.",
+        "placeholder": "",
+        "default": null
+      },
+      {
+        "key": "PrimaryScheduleName",
+        "display_name": "Primary Schedule Name",
+        "type": "text",
+        "help_text": "The OpsGenie schedule name for the primary.",
+        "placeholder": "",
+        "default": null
+      },
+      {
+        "key": "SecondaryScheduleName",
+        "display_name": "Secondary Schedule Name",
+        "type": "text",
+        "help_text": "The OpsGenie schedule name for the secondary.",
+        "placeholder": "",
+        "default": null
+      },
+      {
+        "key": "ManagerEscalation",
+        "display_name": "When no one is onCall the Manager assume",
+        "type": "text",
+        "help_text": "The Mattermost username for the Engineer Manager.",
+        "placeholder": "",
+        "default": null
+      },
+      {
+        "key": "MentionKey",
+        "display_name": "Mention key",
+        "type": "text",
+        "help_text": "The mention text you want to use, like @oncall-peeps.",
+        "placeholder": "oncall-peeps",
+        "default": null
+      }
+    ]
   }
 }
 `

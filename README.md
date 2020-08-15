@@ -1,117 +1,41 @@
-# Plugin Starter Template [![CircleCI branch](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-starter-template/master.svg)](https://circleci.com/gh/mattermost/mattermost-plugin-starter-template)
+# Plugin OnCall Mention
 
-This plugin serves as a starting point for writing a Mattermost plugin. Feel free to base your own plugin off this repository.
+This Mattermost Plugin helps to have a single mention to call who is onCall in the time you make a post using the configured mention.
 
-To learn more about plugins, see [our plugin documentation](https://developers.mattermost.com/extend/plugins/).
+Today it works with OpsGenie and in a very strict OpsGenie Schedule configuration that we use inside Mattermost and inside a specific Team.
+However there is a plan to make this generic, so any feedback and PRs are welcome.
 
-## Getting Started
-Use GitHub's template feature to make a copy of this repository by clicking the "Use this template" button.
+## Configuration
 
-Alternatively shallow clone the repository matching your plugin name:
-```
-git clone --depth 1 https://github.com/mattermost/mattermost-plugin-starter-template com.example.my-plugin
-```
+- Install this Plugin in your Mattermost instance
+- Get the OpsGenie API Key https://docs.opsgenie.com/docs/api-key-management
+- Go to `System Console > Plugins > OnCall Mention` in your Mattermost instance
+    - Set the OpsGenie API Key
+    - Set the Schedule Names
+    - Set the user that will respond, when (if) there is no one in the onCall rotation
+    - Set the `@mention` you want to use
 
-Note that this project uses [Go modules](https://github.com/golang/go/wiki/Modules). Be sure to locate the project outside of `$GOPATH`.
 
-Edit `plugin.json` with your `id`, `name`, and `description`:
-```
-{
-    "id": "com.example.my-plugin",
-    "name": "My Plugin",
-    "description": "A plugin to enhance Mattermost."
-}
-```
+## Usage
 
-Build your plugin:
-```
-make
-```
+if you set the `@mention` to be something like `oncall-peeps` everytime you metion this it will convert to a link and add the users that are oncall at that moment.
 
-This will produce a single plugin file (with support for multiple architectures) for upload to your Mattermost server:
+For example, lets say that `user-1` and `user-2` are onCall when you create a post with `@oncall-peeps looks like my application on cluster ABC is not working` it will convert the `@oncall-peeps` to a link and add the users to that, so the users will receive an notification.
 
-```
-dist/com.example.my-plugin.tar.gz
-```
+If you edit the message you will see the plugin made the change and will be something like `[@oncall-peeps]( \\* @user-1 @user-2 \\*) looks like my application on cluster ABC is not working`
 
 ## Development
 
-To avoid having to manually install your plugin, build and deploy your plugin using one of the following options.
+This plugin contains both a server and web app portion.
 
-### Deploying with Local Mode
+Use `make dist` to build distributions of the plugin that you can upload to a Mattermost server.
 
-If your Mattermost server is running locally, you can enable [local mode](https://docs.mattermost.com/administration/mmctl-cli-tool.html#local-mode) to streamline deploying your plugin. Edit your server configuration as follows:
+Use `make check-style` to check the style.
 
-```json
-{
-    "ServiceSettings": {
-        ...
-        "EnableLocalMode": true,
-        "LocalModeSocketLocation": "/var/tmp/mattermost_local.socket"
-    }
-}
-```
+Use `make deploy` to deploy the plugin to your local server. Before running `make deploy` you need to set a few environment variables:
 
-and then deploy your plugin:
-```
-make deploy
-```
-
-You may also customize the Unix socket path:
-```
-export MM_LOCALSOCKETPATH=/var/tmp/alternate_local.socket
-make deploy
-```
-
-If developing a plugin with a webapp, watch for changes and deploy those automatically:
-```
-export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
-export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
-make watch
-```
-
-### Deploying with credentials
-
-Alternatively, you can authenticate with the server's API with credentials:
 ```
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_USERNAME=admin
 export MM_ADMIN_PASSWORD=password
-make deploy
 ```
-
-or with a [personal access token](https://docs.mattermost.com/developer/personal-access-tokens.html):
-```
-export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
-export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
-make deploy
-```
-
-## Q&A
-
-### How do I make a server-only or web app-only plugin?
-
-Simply delete the `server` or `webapp` folders and remove the corresponding sections from `plugin.json`. The build scripts will skip the missing portions automatically.
-
-### How do I include assets in the plugin bundle?
-
-Place them into the `assets` directory. To use an asset at runtime, build the path to your asset and open as a regular file:
-
-```go
-bundlePath, err := p.API.GetBundlePath()
-if err != nil {
-    return errors.Wrap(err, "failed to get bundle path")
-}
-
-profileImage, err := ioutil.ReadFile(filepath.Join(bundlePath, "assets", "profile_image.png"))
-if err != nil {
-    return errors.Wrap(err, "failed to read profile image")
-}
-
-if appErr := p.API.SetProfileImage(userID, profileImage); appErr != nil {
-    return errors.Wrap(err, "failed to set profile image")
-}
-```
-
-### How do I build the plugin with unminified JavaScript?
-Use `make dist-debug` and `make deploy-debug` in place of `make dist` and `make deploy` to configure webpack to generate unminified Javascript.
