@@ -11,7 +11,7 @@ However there is a plan to make this generic, so any feedback and PRs are welcom
 - Get the OpsGenie API Key https://docs.opsgenie.com/docs/api-key-management
 - Go to `System Console > Plugins > OnCall Mention` in your Mattermost instance
     - Set the OpsGenie API Key
-    - Set the Teams that are on call for that you need to use the following `[oncall.json](oncall.json)` as example
+    - Set the Teams that are on call for that you need to use the following [oncall.json](oncall.json) as example
 
     ```json
     {
