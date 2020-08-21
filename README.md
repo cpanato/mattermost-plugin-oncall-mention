@@ -17,6 +17,7 @@ However there is a plan to make this generic, so any feedback and PRs are welcom
     {
         "teams": [
             {
+                "team": "team-B",
                 "mention": "peeps-oncall",
                 "schedules": [
                     "my-opsgenie-team-schedule",
@@ -25,6 +26,7 @@ However there is a plan to make this generic, so any feedback and PRs are welcom
                 "escalation_manager": "MM_manager_username"
             },
             {
+                "team": "support-team",
                 "mention": "support-oncall",
                 "schedules": [
                     "my-opsgenie-team-support-schedule"
