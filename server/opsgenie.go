@@ -31,7 +31,6 @@ func (p *Plugin) whoIsOnCall(schedules []string) ([]string, error) {
 }
 
 func appendUniqueValues(a []string, b []string) []string {
-
 	check := make(map[string]int)
 	d := append(a, b...)
 	res := make([]string, 0)
@@ -65,10 +64,5 @@ func (p *Plugin) getOncall(client *schedule.Client, scheduleName string) ([]stri
 		return []string{}, nil
 	}
 
-	var users []string
-	for _, onCallRecipient := range onCall.OnCallRecipients {
-		users = append(users, onCallRecipient)
-	}
-
-	return users, nil
+	return onCall.OnCallRecipients, nil
 }

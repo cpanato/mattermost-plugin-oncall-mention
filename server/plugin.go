@@ -87,6 +87,10 @@ func (p *Plugin) MessageWillBePosted(context *plugin.Context, post *model.Post) 
 				if len(oncallPeeps) == 0 {
 					p.API.LogDebug("Cache Expired or key is empty, calling opsgenie to get fresh data")
 					oncallPeeps, err = p.getFreshOncallPeeps(oncall.Mention, oncall.Schedules, oncall.EscalationManager)
+					if err != nil {
+						p.API.LogError("failed to get fresh oncall information", "err", err.Error())
+						return post, ""
+					}
 				}
 
 				toReplace := fmt.Sprintf("[@%s]( \\* %s \\* )", oncall.Mention, strings.Join(oncallPeeps, " "))

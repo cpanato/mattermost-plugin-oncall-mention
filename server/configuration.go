@@ -124,7 +124,10 @@ func (p *Plugin) OnActivate() error {
 	}
 
 	for _, oncall := range p.oncallTeamsCfg.Teams {
-		p.getFreshOncallPeeps(oncall.Mention, oncall.Schedules, oncall.EscalationManager)
+		_, err := p.getFreshOncallPeeps(oncall.Mention, oncall.Schedules, oncall.EscalationManager)
+		if err != nil {
+			return err
+		}
 	}
 
 	p.API.LogDebug("Oncall mention plugin up.")
