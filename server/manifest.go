@@ -13,7 +13,7 @@ var manifest *model.Manifest
 const manifestStr = `
 {
   "id": "com.cpanato.oncall-mention",
-  "name": "Mattermost Cloud OnCall mention",
+  "name": "Mattermost OnCall Mention Plugin",
   "description": "This plugin creates a alias to make easier to ping who is oncall.",
   "version": "0.1.0",
   "min_server_version": "5.12.0",
@@ -38,35 +38,11 @@ const manifestStr = `
         "default": null
       },
       {
-        "key": "PrimaryScheduleName",
-        "display_name": "Primary Schedule Name",
-        "type": "text",
-        "help_text": "The OpsGenie schedule name for the primary.",
-        "placeholder": "",
-        "default": null
-      },
-      {
-        "key": "SecondaryScheduleName",
-        "display_name": "Secondary Schedule Name",
-        "type": "text",
-        "help_text": "The OpsGenie schedule name for the secondary.",
-        "placeholder": "",
-        "default": null
-      },
-      {
-        "key": "ManagerEscalation",
-        "display_name": "When no one is onCall the Manager assume",
-        "type": "text",
-        "help_text": "The Mattermost username for the Engineer Manager.",
-        "placeholder": "",
-        "default": null
-      },
-      {
-        "key": "MentionKey",
-        "display_name": "Mention key",
-        "type": "text",
-        "help_text": "The mention text you want to use, like @oncall-peeps.",
-        "placeholder": "oncall-peeps",
+        "key": "OncallTeamsJSON",
+        "display_name": "On Call teams config",
+        "type": "longtext",
+        "help_text": "The json config to add all your oncall team and schedules",
+        "placeholder": "{\n\t\"teams\": [\n\t\t{\n\t\t\t\"team\":\"teamA\",\n\t\t\t\"mention\": \"team-oncall\",\n\t\t\t\"schedules\": [\n\t\t\t\t\"schedule_1\"\n\t\t\t],\n\t\t\t\"escalation_manager\": \"cpanato\"\n\t\t}\n\t]\n}",
         "default": null
       }
     ]

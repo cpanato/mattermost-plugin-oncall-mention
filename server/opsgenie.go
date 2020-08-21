@@ -2,72 +2,53 @@ package main
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	"github.com/opsgenie/opsgenie-go-sdk-v2/user"
+	"github.com/pkg/errors"
 )
 
-func (p *Plugin) whoIsOnCall(userNameType string) (string, string) {
-	primary, err := p.getOncall(p.configuration.PrimaryScheduleName, userNameType)
-	if err != nil {
-		p.API.LogError("not able to get who is the primary contact")
-		return "", ""
-	}
-
-	if primary == "" {
-		return "", ""
-	}
-
-	secondary, err := p.getOncall(p.configuration.SecondaryScheduleName, userNameType)
-	if err != nil {
-		p.API.LogError("not able to get who is the secondary contact")
-		return "", ""
-	}
-
-	return primary, secondary
-}
-
-func (p *Plugin) getUserInfo(opsGenieUser, userNameType string) string {
-	client, err := user.NewClient(&client.Config{
-		ApiKey: p.configuration.OpsGenieAPIKey,
-	})
-	if err != nil {
-		p.API.LogError("not able to create a new opsgenie client")
-		return ""
-	}
-
-	userReq := &user.GetRequest{
-		Identifier: opsGenieUser,
-	}
-
-	userResult, err := client.Get(context.Background(), userReq)
-	if err != nil {
-		log.Fatal("not able to get the user")
-		return ""
-	}
-
-	log.Println(userResult.FullName, userResult.Details[userNameType][0])
-	if len(userResult.Details[userNameType]) == 0 {
-		return userResult.FullName
-	}
-
-	return userResult.Details[userNameType][0]
-}
-
-func (p *Plugin) getOncall(scheduleName, userNameType string) (string, error) {
+func (p *Plugin) whoIsOnCall(schedules []string) ([]string, error) {
 	client, err := schedule.NewClient(&client.Config{
 		ApiKey: p.configuration.OpsGenieAPIKey,
 	})
 	if err != nil {
 		p.API.LogError("not able to create a new opsgenie client")
-		return "", err
+		return []string{}, err
+	}
+	var oncallPeeps []string
+	for _, schedule := range schedules {
+		oncallPeepsSchedule, err := p.getOncall(client, schedule)
+		if err != nil {
+			p.API.LogError("not able to get who is oncall")
+			return oncallPeeps, errors.Wrap(err, "failed to get who is oncall")
+		}
+		oncallPeeps = appendUniqueValues(oncallPeeps, oncallPeepsSchedule)
 	}
 
+	return oncallPeeps, nil
+}
+
+func appendUniqueValues(a []string, b []string) []string {
+
+	check := make(map[string]int)
+	d := append(a, b...)
+	res := make([]string, 0)
+	for _, val := range d {
+		check[val] = 1
+	}
+
+	for value := range check {
+		res = append(res, value)
+	}
+
+	return res
+}
+
+func (p *Plugin) getOncall(client *schedule.Client, scheduleName string) ([]string, error) {
 	flat := true
-	now := time.Now()
+	now := time.Now().UTC()
 	onCallReq := &schedule.GetOnCallsRequest{
 		Flat:                   &flat,
 		Date:                   &now,
@@ -77,17 +58,17 @@ func (p *Plugin) getOncall(scheduleName, userNameType string) (string, error) {
 	onCall, err := client.GetOnCalls(context.TODO(), onCallReq)
 	if err != nil {
 		p.API.LogError("not able to GetOnCalls", "err", err.Error())
-		return "", err
+		return []string{}, err
 	}
 
 	if (len(onCall.OnCallRecipients)) <= 0 {
-		return "", nil
+		return []string{}, nil
 	}
 
-	primary := p.getUserInfo(onCall.OnCallRecipients[0], userNameType)
-	if primary == "" {
-		return onCall.OnCallRecipients[0], nil
+	var users []string
+	for _, onCallRecipient := range onCall.OnCallRecipients {
+		users = append(users, onCallRecipient)
 	}
 
-	return primary, nil
+	return users, nil
 }

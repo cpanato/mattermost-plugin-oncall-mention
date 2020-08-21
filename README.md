@@ -11,10 +11,34 @@ However there is a plan to make this generic, so any feedback and PRs are welcom
 - Get the OpsGenie API Key https://docs.opsgenie.com/docs/api-key-management
 - Go to `System Console > Plugins > OnCall Mention` in your Mattermost instance
     - Set the OpsGenie API Key
-    - Set the Schedule Names
-    - Set the user that will respond, when (if) there is no one in the onCall rotation
-    - Set the `@mention` you want to use
+    - Set the Teams that are on call for that you need to use the following `oncall.json` as example
 
+    ```json
+    {
+        "teams": [
+            {
+                "mention": "peeps-oncall",
+                "schedules": [
+                    "my-opsgenie-team-schedule",
+                    "my-second-opsgenie-team-schedule"
+                ],
+                "escalation_manager": "MM_manager_username"
+            },
+            {
+                "mention": "support-oncall",
+                "schedules": [
+                    "my-opsgenie-team-support-schedule"
+                ],
+                "escalation_manager": "MM_manager_username"
+            },
+        ]
+    }
+    ```
+
+Where:
+    - `mention`: is the string that when you posting a message wil be replaced to the persons that are on call
+    - `schedules`: are the schedules you have configures in OpsGenie for a particular Team.
+    - `escalation_manager`: When there is no one on call in the moment the mention was triggered or any error ocurred it will use the manager for that mention/team. Needs to be the Mattermost username for the manager.
 
 ## Usage
 

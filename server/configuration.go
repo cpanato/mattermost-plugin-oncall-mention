@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -18,11 +20,18 @@ import (
 // If you add non-reference types to your configuration struct, be sure to rewrite Clone as a deep
 // copy appropriate for your types.
 type configuration struct {
-	OpsGenieAPIKey        string
-	PrimaryScheduleName   string
-	SecondaryScheduleName string
-	ManagerEscalation     string
-	MentionKey            string
+	OncallTeamsJSON string
+	OpsGenieAPIKey  string
+}
+
+type OncallTeams struct {
+	Teams []Teams `json:"teams"`
+}
+type Teams struct {
+	TeamName          string   `json:"team"`
+	Mention           string   `json:"mention"`
+	Schedules         []string `json:"schedules"`
+	EscalationManager string   `json:"escalation_manager"`
 }
 
 // Clone shallow copies the configuration. Your implementation may require a deep copy if
@@ -83,6 +92,42 @@ func (p *Plugin) OnConfigurationChange() error {
 	}
 
 	p.setConfiguration(configuration)
+
+	if err := p.IsValid(p.configuration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Plugin) IsValid(configuration *configuration) error {
+	if configuration.OpsGenieAPIKey == "" {
+		return fmt.Errorf("must have an OpsGenie API Key Set")
+	}
+
+	err := json.Unmarshal([]byte(p.configuration.OncallTeamsJSON), &p.oncallTeamsCfg)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse the oncall json config")
+	}
+
+	p.API.LogDebug(">>>>", "test", p.oncallTeamsCfg.Teams[0].Mention)
+
+	return nil
+}
+
+// OnActivate initialize the plugin
+func (p *Plugin) OnActivate() error {
+	p.API.LogDebug("Oncall mention plugin starting up...")
+
+	if err := p.IsValid(p.configuration); err != nil {
+		return err
+	}
+
+	for _, oncall := range p.oncallTeamsCfg.Teams {
+		p.getFreshOncallPeeps(oncall.Mention, oncall.Schedules, oncall.EscalationManager)
+	}
+
+	p.API.LogDebug("Oncall mention plugin up.")
 
 	return nil
 }
