@@ -1,0 +1,21 @@
+{
+  "teams": [
+    {
+      "team": "team-B",
+      "mention": "peeps-oncall",
+      "schedules": [
+        "my-opsgenie-team-schedule",
+        "my-second-opsgenie-team-schedule"
+      ],
+      "escalation_manager": "MM_manager_username"
+    },
+    {
+      "team": "support-team",
+      "mention": "support-oncall",
+      "schedules": [
+        "my-opsgenie-team-support-schedule"
+      ],
+      "escalation_manager": "MM_manager_username"
+    }
+  ]
+}
