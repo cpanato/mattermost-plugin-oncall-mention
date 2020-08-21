@@ -38,9 +38,11 @@ However there is a plan to make this generic, so any feedback and PRs are welcom
     ```
 
 Where:
-    - `mention`: is the string that when you posting a message wil be replaced to the persons that are on call
-    - `schedules`: are the schedules you have configures in OpsGenie for a particular Team.
-    - `escalation_manager`: When there is no one on call in the moment the mention was triggered or any error ocurred it will use the manager for that mention/team. Needs to be the Mattermost username for the manager.
+
+- `team`: The team name for the configuration
+- `mention`: is the string that when you posting a message wil be replaced to the persons that are on call
+- `schedules`: are the schedules you have configures in OpsGenie for a particular Team.
+- `escalation_manager`: When there is no one on call in the moment the mention was triggered or any error ocurred it will use the manager for that mention/team. Needs to be the Mattermost username for the manager.
 
 ## Usage
 
