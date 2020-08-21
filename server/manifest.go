@@ -15,7 +15,7 @@ const manifestStr = `
   "id": "com.cpanato.oncall-mention",
   "name": "Mattermost OnCall Mention Plugin",
   "description": "This plugin creates a alias to make easier to ping who is oncall.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "min_server_version": "5.12.0",
   "server": {
     "executables": {
