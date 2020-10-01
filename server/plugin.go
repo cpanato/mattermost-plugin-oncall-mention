@@ -54,7 +54,7 @@ func (p *Plugin) storeOncallPersons(mentionKey string, oncallPersons []string) e
 	if err != nil {
 		return err
 	}
-	appErr := p.API.KVSetWithExpiry("OnCallMention-"+mentionKey, b, 3600)
+	appErr := p.API.KVSetWithExpiry("OnCallMention-"+mentionKey, b, 900)
 	if appErr != nil {
 		return fmt.Errorf("encountered error saving oncallPersons mapping")
 	}
